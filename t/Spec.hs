@@ -65,6 +65,12 @@ testExpressions = describe "Parse literals:" $ do
       "Right (LS \"\\n\")"
     shouldBe (testExpression "'\n'")
       "Left \"dummy.js\" (line 1, column 2):\nunexpected \"\\n\"\nexpecting \"\\\\\" or \"'\""
+    shouldBe (testExpression "'\\u26a5'")
+      "Right (LS \"\\9893\")"
+    shouldBe (testExpression "'\\x3e'")
+      "Right (LS \"\\9893\")"
+    shouldBe (testExpression "'\\a'")
+      "Right (LS \"a\")"
 
   it "template string" $ do
     shouldBe (testExpression "`test`")

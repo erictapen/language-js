@@ -7,6 +7,7 @@ import qualified Text.Parsec as P
 import Language.JS.Types
 import Language.JS.Common
 import Language.JS.Operators
+import Numeric (readHex)
 
 -- | Identifier name.
 identifierName =
@@ -69,14 +70,28 @@ stringLiteral =
       return $ LS content
     escaped = do
       P.char '\\'
-      P.choice $ zipWith escapedChar codes replacements
+      P.choice $ [ unicode16, unicode8 ] ++ zipWith escapedChar codes replacements ++ [ nonEscape ]
     escapedChar code replacement = do
       P.char code
       return replacement
     codes        = ['b',  'n',  'f',  'r',  't',  '\\', '\"', '\'']
     replacements = ['\b', '\n', '\f', '\r', '\t', '\\', '\"', '\'']
-
-
+    -- TODO This is not a complete implementation. See the spec:
+    -- https://262.ecma-international.org/8.0/#sec-literals-string-literals
+    unicode16 = do
+      P.char 'u'
+      escSeq <- P.count 4 P.hexDigit
+      -- TODO unfinished
+      return '⚥'
+      -- return $ decodeUtf16BE $ fst $ head $ readHex escSeq
+    unicode8 = do
+      P.char 'x'
+      escSeq <- P.count 2 P.hexDigit
+      -- TODO unfinished
+      return '⚥'
+    nonEscape = do
+      c <- P.anyChar
+      return c
 
 -- | Parse template strings.
 templateString str ls = (do
